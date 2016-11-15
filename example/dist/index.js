@@ -8207,6 +8207,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = {
 	    template: __webpack_require__(9),
 	    props: {
+	        slideplay: { //自动播放
+	            type: Boolean,
+	            default: true
+	        },
 	        autoplay: { //自动播放
 	            type: Boolean,
 	            default: false
@@ -8232,7 +8236,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            default: function _default() {}
 	        },
 	        list: {
-	            type: Array
+	            type: Array,
+	            required: true
 	        }
 	    },
 	    computed: {
@@ -8240,18 +8245,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.list.length;
 	        }
 	    },
-	    watch: {},
+	    watch: {
+	        size: function size(val) {
+	            if (val) {
+	                this.play();
+	            }
+	        }
+	    },
 	    methods: {
-	        initEvent: function initEvent() {
+	        initTouch: function initTouch() {
 	            var _this = this;
 	
-	            //监听动画执行完毕,自动播放下一个
-	            this.$group.addEventListener('webkitTransitionEnd', function () {
-	                if (!_this.isPlaying) return;
-	                _this.timeoutId = setTimeout(function () {
-	                    _this.alternate ? _this.previous() : _this.next();
-	                }, _this.interval);
+	            var touch = new Touch(this.$el);
+	
+	            touch.on('touch:start', function (res) {
+	                res.e.preventDefault();
+	                //移动距离
+	                _this.distinct = 0;
+	                _this.stop();
 	            });
+	
+	            touch.on('touch:move', function (res) {
+	                res.e.preventDefault();
+	                _this.move(res);
+	            });
+	
+	            var delayTime = 0;
+	            touch.on('touch:end', function (res) {
+	                res.e.preventDefault();
+	                if (Date.now() - delayTime > _this.duration) {
+	                    _this.play();
+	                    _this.end(res);
+	                    delayTime = Date.now();
+	                }
+	            });
+	
+	            touch.start();
+	        },
+	        initEvent: function initEvent() {
+	            var _this3 = this;
 	
 	            var move = function move(index) {
 	                var _this2 = this;
@@ -8267,25 +8299,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	            //手动滑动
 	            this.$group.addEventListener('webkitTransitionEnd', function () {
-	                if (_this.index === _this.size) {
-	                    move.call(_this, _this.index);
-	                } else if (_this.index === -1) {
-	                    move.call(_this, 1);
+	                if (_this3.index === _this3.size) {
+	                    move.call(_this3, _this3.index);
+	                } else if (_this3.index === -1) {
+	                    move.call(_this3, 1);
 	                }
 	
-	                _this.change(_this.index);
+	                _this3.change(_this3.index);
+	            });
+	
+	            //监听动画执行完毕,自动播放下一个
+	            this.$group.addEventListener('webkitTransitionEnd', function () {
+	                if (_this3.autoplay && _this3.isPlaying) {
+	                    _this3.delayPlay();
+	                }
 	            });
 	        },
 	        translateX: function translateX(el, count) {
 	            el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
 	        },
 	        play: function play() {
-	            var _this3 = this;
-	
 	            if (this.isPlaying) return;
-	            this.isPlaying = true;
+	            if (this.size && this.autoplay) {
+	                this.isPlaying = true;
+	                this.delayPlay();
+	            }
+	        },
+	        delayPlay: function delayPlay() {
+	            var _this4 = this;
+	
 	            this.timeoutId = setTimeout(function () {
-	                _this3.alternate ? _this3.previous() : _this3.next();
+	                _this4.alternate ? _this4.previous() : _this4.next();
+	                //消除iphone5s多次执行
+	                clearTimeout(_this4.timeoutId);
 	            }, this.interval);
 	        },
 	        stop: function stop() {
@@ -8301,6 +8347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        end: function end(res) {
+	            if (Math.abs(res.x1 - res.x2) < 50) return;
 	            if (res.dir === 'left') {
 	                this.next();
 	            } else if (res.dir === 'right') {
@@ -8315,8 +8362,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 	    mounted: function mounted() {
-	        var _this4 = this;
-	
 	        this.isPlaying = false;
 	        //执行的下标
 	        this.index = this.current;
@@ -8333,6 +8378,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //初始化事件
 	        this.initEvent();
 	
+	        if (this.slideplay) {
+	            this.initTouch();
+	        }
+	
 	        this.$nextTick(function () {
 	            //初始化位置
 	            this.goto(this.index);
@@ -8341,25 +8390,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.play();
 	            }
 	        });
-	
-	        var touch = new Touch(this.$el);
-	
-	        touch.on('touch:start', function (res) {
-	            _this4.distinct = 0;
-	            res.e.preventDefault();
-	        });
-	
-	        touch.on('touch:move', function (res) {
-	            res.e.preventDefault();
-	            _this4.move(res);
-	        });
-	
-	        touch.on('touch:end', function (res) {
-	            res.e.preventDefault();
-	            _this4.end(res);
-	        });
-	
-	        touch.start();
 	    }
 	};
 

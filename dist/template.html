@@ -1,0 +1,15 @@
+<div class="swiper-container">
+  <div class="swiper-wrapper">
+    <div class="swiper-group">
+      <div class="swiper-item">
+        <img :src="list[list.length - 1]">
+      </div>
+      <div class="swiper-item" v-for="item in list">
+        <img :src="item">
+      </div>
+      <div class="swiper-item">
+        <img :src="list[0]">
+      </div>
+    </div>
+  </div>
+</div>

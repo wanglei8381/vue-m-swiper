@@ -1,36 +1,37 @@
+'use strict';
+
 require('./style.css');
-let Touch = require('super-touch');
+var Touch = require('super-touch');
 module.exports = {
     template: require('./template.html'),
     props: {
-        slideplay: {//自动播放
+        slideplay: { //自动播放
             type: Boolean,
             default: true
         },
-        autoplay: {//自动播放
+        autoplay: { //自动播放
             type: Boolean,
             default: false
         },
-        current: {//当前页面的index
+        current: { //当前页面的index
             type: Number,
             default: 0
         },
-        interval: {//自动切换时间间隔
+        interval: { //自动切换时间间隔
             type: Number,
             default: 5000
         },
-        duration: {//滑动动画时长
+        duration: { //滑动动画时长
             type: Number,
             default: 1000
         },
-        alternate: {//播放顺序,默认从左到右
+        alternate: { //播放顺序,默认从左到右
             type: Boolean,
             default: false
         },
-        change: {//每次更改调用的函数
+        change: { //每次更改调用的函数
             type: Function,
-            default: function () {
-            }
+            default: function _default() {}
         },
         list: {
             type: Array,
@@ -38,105 +39,112 @@ module.exports = {
         }
     },
     computed: {
-        size(){
+        size: function size() {
             return this.list.length;
         }
     },
     watch: {
-        size(val){
+        size: function size(val) {
             if (val) {
                 this.play();
             }
         }
     },
     methods: {
-        initTouch() {
+        initTouch: function initTouch() {
+            var _this = this;
+
             var touch = new Touch(this.$el);
 
-            touch.on('touch:start', (res)=> {
+            touch.on('touch:start', function (res) {
                 res.e.preventDefault();
                 //移动距离
-                this.distinct = 0;
-                this.stop();
+                _this.distinct = 0;
+                _this.stop();
             });
 
-            touch.on('touch:move', (res)=> {
+            touch.on('touch:move', function (res) {
                 res.e.preventDefault();
-                this.move(res);
+                _this.move(res);
             });
 
             var delayTime = 0;
-            touch.on('touch:end', (res)=> {
+            touch.on('touch:end', function (res) {
                 res.e.preventDefault();
-                if (Date.now() - delayTime > this.duration) {
-                    this.play();
-                    this.end(res);
+                if (Date.now() - delayTime > _this.duration) {
+                    _this.play();
+                    _this.end(res);
                     delayTime = Date.now();
                 }
             });
 
             touch.start();
         },
-        initEvent() {
+        initEvent: function initEvent() {
+            var _this3 = this;
 
-            var move = function (index) {
+            var move = function move(index) {
+                var _this2 = this;
+
                 var idx = index - this.size;
                 this.$group.style.webkitTransitionDuration = '0s';
                 this.translateX(this.$group, idx);
                 this.index = Math.abs(idx);
                 //更新过渡时间
-                setTimeout(()=> {
-                    this.$group.style.webkitTransitionDuration = this.duration + 'ms';
+                setTimeout(function () {
+                    _this2.$group.style.webkitTransitionDuration = _this2.duration + 'ms';
                 }, 0);
-            }
+            };
             //手动滑动
-            this.$group.addEventListener('webkitTransitionEnd', () => {
-                if (this.index === this.size) {
-                    move.call(this, this.index);
-                } else if (this.index === -1) {
-                    move.call(this, 1);
+            this.$group.addEventListener('webkitTransitionEnd', function () {
+                if (_this3.index === _this3.size) {
+                    move.call(_this3, _this3.index);
+                } else if (_this3.index === -1) {
+                    move.call(_this3, 1);
                 }
 
-                this.change(this.index);
+                _this3.change(_this3.index);
             });
 
             //监听动画执行完毕,自动播放下一个
-            this.$group.addEventListener('webkitTransitionEnd', () => {
-                if (this.autoplay && this.isPlaying) {
-                    this.delayPlay();
+            this.$group.addEventListener('webkitTransitionEnd', function () {
+                if (_this3.autoplay && _this3.isPlaying) {
+                    _this3.delayPlay();
                 }
             });
         },
-        translateX(el, count) {
+        translateX: function translateX(el, count) {
             el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
         },
-        play() {
+        play: function play() {
             if (this.isPlaying) return;
             if (this.size && this.autoplay) {
                 this.isPlaying = true;
                 this.delayPlay();
             }
         },
-        delayPlay() {
-            this.timeoutId = setTimeout(() => {
-                this.alternate ? this.previous() : this.next();
+        delayPlay: function delayPlay() {
+            var _this4 = this;
+
+            this.timeoutId = setTimeout(function () {
+                _this4.alternate ? _this4.previous() : _this4.next();
                 //消除iphone5s多次执行
-                clearTimeout(this.timeoutId);
+                clearTimeout(_this4.timeoutId);
             }, this.interval);
         },
-        stop() {
+        stop: function stop() {
             this.isPlaying = false;
             clearTimeout(this.timeoutId);
         },
-        goto(index) {
+        goto: function goto(index) {
             this.translateX(this.$group, -index);
             this.index = index % (this.size + 1);
         },
-        move(res) {
+        move: function move(res) {
             // this.distinct -= res.xrange;
             // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
-        end(res) {
+        end: function end(res) {
             if (Math.abs(res.x1 - res.x2) < 50) return;
             if (res.dir === 'left') {
                 this.next();
@@ -144,14 +152,14 @@ module.exports = {
                 this.previous();
             }
         },
-        previous() {
+        previous: function previous() {
             this.goto(this.index - 1);
         },
-        next() {
+        next: function next() {
             this.goto(this.index + 1);
         }
     },
-    mounted() {
+    mounted: function mounted() {
         this.isPlaying = false;
         //执行的下标
         this.index = this.current;
@@ -180,7 +188,5 @@ module.exports = {
                 this.play();
             }
         });
-
-
     }
 };
