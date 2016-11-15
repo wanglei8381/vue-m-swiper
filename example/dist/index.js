@@ -8407,7 +8407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s ease-out;\n  -webkit-transition: -webkit-transform 1s ease-out;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
+	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
 	
 	// exports
 
