@@ -5,7 +5,7 @@ var Touch = require('super-touch');
 module.exports = {
     template: require('./template.html'),
     props: {
-        slideplay: { //自动播放
+        slideplay: { //滑动播放
             type: Boolean,
             default: true
         },
@@ -58,8 +58,7 @@ module.exports = {
 
             touch.on('touch:start', function (res) {
                 res.e.preventDefault();
-                //移动距离
-                _this.distinct = 0;
+                _this.$wrapper.style.webkitTransitionDuration = '0s';
                 _this.stop();
             });
 
@@ -71,6 +70,9 @@ module.exports = {
             var delayTime = 0;
             touch.on('touch:end', function (res) {
                 res.e.preventDefault();
+                _this.distinct = -parseInt(_this.width);
+                _this.$wrapper.style.webkitTransitionDuration = _this.duration + 'ms';
+                _this.$wrapper.style.webkitTransform = 'translate3d(' + _this.distinct + 'px,0,0)';
                 if (Date.now() - delayTime > _this.duration) {
                     _this.play();
                     _this.end(res);
@@ -141,11 +143,11 @@ module.exports = {
             this.index = index % (this.size + 1);
         },
         move: function move(res) {
-            // this.distinct -= res.xrange;
-            // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+            this.distinct -= res.xrange * 0.5;
+            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         end: function end(res) {
-            if (Math.abs(res.x1 - res.x2) < 50) return;
+            if (Math.abs(res.x1 - res.x2) < 100) return;
             if (res.dir === 'left') {
                 this.next();
             } else if (res.dir === 'right') {
@@ -166,10 +168,12 @@ module.exports = {
         //setTimeout标示
         this.timeoutId = null;
 
+        this.width = getComputedStyle(this.$el).getPropertyValue('width');
         //手滑动的距离
-        this.distinct = 0;
+        this.distinct = -parseInt(this.width);
 
         //获取元素
+        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
         this.$group = this.$el.querySelector('.swiper-group');
         this.$items = this.$group.querySelectorAll('.swiper-item');
 

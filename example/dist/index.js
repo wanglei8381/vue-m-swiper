@@ -63,13 +63,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    el: '#container',
 	    data: function data() {
 	        return {
-	            list: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg']
+	            list: []
 	        };
 	    },
 	    methods: {
 	        change: function change(index) {
 	            console.log(index);
 	        }
+	    },
+	    mounted: function mounted() {
+	        var _this = this;
+	
+	        setTimeout(function () {
+	            _this.list = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+	        }, 1000);
 	    }
 	});
 
@@ -108,7 +115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, "body {\n  background-color: #fff;\n  margin: 0;\n}\n\n.swiper-item {\n  height: 100px;\n}\n", ""]);
+	exports.push([module.id, "body {\n  background-color: #fff;\n  margin: 0;\n}\n\n#container {\n  height: 300px;\n}", ""]);
 	
 	// exports
 
@@ -8203,11 +8210,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	__webpack_require__(7);
-	var Touch = __webpack_require__(10);
+	var Touch = __webpack_require__(9);
 	module.exports = {
-	    template: __webpack_require__(9),
+	    template: __webpack_require__(12),
 	    props: {
-	        slideplay: { //自动播放
+	        slideplay: { //滑动播放
 	            type: Boolean,
 	            default: true
 	        },
@@ -8260,8 +8267,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            touch.on('touch:start', function (res) {
 	                res.e.preventDefault();
-	                //移动距离
-	                _this.distinct = 0;
+	                _this.$wrapper.style.webkitTransitionDuration = '0s';
 	                _this.stop();
 	            });
 	
@@ -8273,6 +8279,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var delayTime = 0;
 	            touch.on('touch:end', function (res) {
 	                res.e.preventDefault();
+	                _this.distinct = -parseInt(_this.width);
+	                _this.$wrapper.style.webkitTransitionDuration = _this.duration + 'ms';
+	                _this.$wrapper.style.webkitTransform = 'translate3d(' + _this.distinct + 'px,0,0)';
 	                if (Date.now() - delayTime > _this.duration) {
 	                    _this.play();
 	                    _this.end(res);
@@ -8343,11 +8352,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.index = index % (this.size + 1);
 	        },
 	        move: function move(res) {
-	            // this.distinct -= res.xrange;
-	            // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+	            this.distinct -= res.xrange * 0.5;
+	            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        end: function end(res) {
-	            if (Math.abs(res.x1 - res.x2) < 50) return;
+	            if (Math.abs(res.x1 - res.x2) < 100) return;
 	            if (res.dir === 'left') {
 	                this.next();
 	            } else if (res.dir === 'right') {
@@ -8368,10 +8377,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //setTimeout标示
 	        this.timeoutId = null;
 	
+	        this.width = getComputedStyle(this.$el).getPropertyValue('width');
 	        //手滑动的距离
-	        this.distinct = 0;
+	        this.distinct = -parseInt(this.width);
 	
 	        //获取元素
+	        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
 	        this.$group = this.$el.querySelector('.swiper-group');
 	        this.$items = this.$group.querySelectorAll('.swiper-item');
 	
@@ -8409,8 +8420,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/.0.23.1@css-loader/index.js!./../../../node_modules/.2.3.1@stylus-loader/index.js!./style.styl", function() {
-				var newContent = require("!!./../../../node_modules/.0.23.1@css-loader/index.js!./../../../node_modules/.2.3.1@stylus-loader/index.js!./style.styl");
+			module.hot.accept("!!./../../../node_modules/.0.23.1@css-loader/index.js!./style.css", function() {
+				var newContent = require("!!./../../../node_modules/.0.23.1@css-loader/index.js!./style.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -8428,24 +8439,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
+	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper {\n  height: 100%;\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n  transition: transform 1s;\n  -webkit-transition: -webkit-transform 1s;\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
 	
 	// exports
 
 
 /***/ },
 /* 9 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n    </div>\n  </div>\n</div>";
-
-/***/ },
-/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//触摸事件处理
-	var Event = __webpack_require__(11);
-	var domEventHelper = __webpack_require__(12);
+	var Event = __webpack_require__(10);
+	var domEventHelper = __webpack_require__(11);
 	
 	function Touch(el) {
 	    Event.call(this);
@@ -8573,7 +8578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Touch;
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function () {
@@ -8750,7 +8755,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function () {
@@ -8812,6 +8817,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	})();
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }
 /******/ ])

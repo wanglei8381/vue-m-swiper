@@ -2,10 +2,14 @@
   overflow: hidden;
   white-space: nowrap;
   font-size: 0;
+  height: 100%;
 }
 .swiper-container .swiper-wrapper {
+  height: 100%;
   transform: translateX(-100%);
   -webkit-transform: translateX(-100%);
+  transition: transform 1s;
+  -webkit-transition: -webkit-transform 1s;
 }
 .swiper-container .swiper-wrapper .swiper-group {
   padding: 0;

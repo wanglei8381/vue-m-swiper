@@ -3,7 +3,7 @@ let Touch = require('super-touch');
 module.exports = {
     template: require('./template.html'),
     props: {
-        slideplay: {//自动播放
+        slideplay: {//滑动播放
             type: Boolean,
             default: true
         },
@@ -55,8 +55,7 @@ module.exports = {
 
             touch.on('touch:start', (res)=> {
                 res.e.preventDefault();
-                //移动距离
-                this.distinct = 0;
+                this.$wrapper.style.webkitTransitionDuration = '0s';
                 this.stop();
             });
 
@@ -68,6 +67,9 @@ module.exports = {
             var delayTime = 0;
             touch.on('touch:end', (res)=> {
                 res.e.preventDefault();
+                this.distinct = -parseInt(this.width);
+                this.$wrapper.style.webkitTransitionDuration = this.duration + 'ms';
+                this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
                 if (Date.now() - delayTime > this.duration) {
                     this.play();
                     this.end(res);
@@ -133,11 +135,11 @@ module.exports = {
             this.index = index % (this.size + 1);
         },
         move(res) {
-            // this.distinct -= res.xrange;
-            // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+            this.distinct -= res.xrange * 0.5;
+            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         end(res) {
-            if (Math.abs(res.x1 - res.x2) < 50) return;
+            if (Math.abs(res.x1 - res.x2) < 100) return;
             if (res.dir === 'left') {
                 this.next();
             } else if (res.dir === 'right') {
@@ -158,10 +160,12 @@ module.exports = {
         //setTimeout标示
         this.timeoutId = null;
 
+        this.width = getComputedStyle(this.$el).getPropertyValue('width');
         //手滑动的距离
-        this.distinct = 0;
+        this.distinct = -parseInt(this.width);
 
         //获取元素
+        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
         this.$group = this.$el.querySelector('.swiper-group');
         this.$items = this.$group.querySelectorAll('.swiper-item');
 

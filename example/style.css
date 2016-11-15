@@ -3,6 +3,6 @@ body {
   margin: 0;
 }
 
-.swiper-item {
-  height: 100px;
+#container {
+  height: 300px;
 }

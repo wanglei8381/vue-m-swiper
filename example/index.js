@@ -5,12 +5,17 @@ new Vue({
     el: '#container',
     data: function () {
         return {
-            list: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg']
+            list: []
         }
     },
     methods: {
         change(index) {
             console.log(index);
         }
+    },
+    mounted(){
+        setTimeout(()=> {
+            this.list = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+        }, 1000);
     }
 });
