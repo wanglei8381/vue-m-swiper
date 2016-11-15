@@ -1,0 +1,30 @@
+.swiper-container {
+  overflow: hidden;
+  white-space nowrap
+  font-size 0
+
+  .swiper-wrapper {
+    transform: translateX(-100%);
+
+    .swiper-content {
+      .swiper-group {
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        transition: transform 1s ease-out;
+
+        .swiper-item {
+          display: inline-block;
+          width: 100%;
+          height: 100%;
+
+          img {
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+    }
+  }
+
+}
