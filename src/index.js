@@ -72,7 +72,7 @@ module.exports = {
             clearTimeout(this.timeoutId);
         },
         goto(index) {
-            index = index % this.size;
+            index = index % (this.size + 1);
             // index = index < 0 ? index + this.size : index;
             if (index == this.index) {
                 return;
@@ -92,8 +92,8 @@ module.exports = {
             }, 0);
         },
         move(res) {
-            this.distinct -= res.xrange;
-            this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+            // this.distinct -= res.xrange;
+            // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         end(res) {
             if (res.dir === 'left') {

@@ -8281,7 +8281,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        goto: function goto(index) {
 	            var _this3 = this;
 	
-	            index = index % this.size;
+	            index = index % (this.size + 1);
 	            // index = index < 0 ? index + this.size : index;
 	            if (index == this.index) {
 	                return;
@@ -8301,8 +8301,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, 0);
 	        },
 	        move: function move(res) {
-	            this.distinct -= res.xrange;
-	            this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+	            // this.distinct -= res.xrange;
+	            // this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        end: function end(res) {
 	            if (res.dir === 'left') {
