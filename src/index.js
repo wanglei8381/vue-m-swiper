@@ -37,25 +37,17 @@ module.exports = {
             return this.list.length;
         }
     },
+    watch: {},
     methods: {
         initEvent() {
-            var size = this.size;
-            var step = this.alternate ? size : 0;
+
             //监听动画执行完毕,自动播放下一个
             this.$group.addEventListener('webkitTransitionEnd', () => {
                 if (!this.isPlaying) return;
                 this.timeoutId = setTimeout(() => {
-                    if (this.count % size === 0) {
-                        this.translateX(this.$content, this.count + step);
-                    }
-                    this.count++;
-                    this.translateX(this.$group, -this.count);
-                    var index = this.count % size;
-                    this.index = index;
-                    this.change(index);
+                    this.alternate ? this.previous() : this.next();
                 }, this.interval);
             });
-
 
             var move = function (index) {
                 var idx = index - this.size;
@@ -69,23 +61,23 @@ module.exports = {
             }
             //手动滑动
             this.$group.addEventListener('webkitTransitionEnd', () => {
-                if (this.isPlaying) return;
                 if (this.index === this.size) {
                     move.call(this, this.index);
                 } else if (this.index === -1) {
                     move.call(this, 1);
                 }
+
+                this.change(this.index);
             });
         },
         translateX(el, count) {
-            count = this.alternate ? -count : count;
             el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
         },
         play() {
             if (this.isPlaying) return;
             this.isPlaying = true;
             this.timeoutId = setTimeout(() => {
-                this.goto(this.index + 1);
+                this.alternate ? this.previous() : this.next();
             }, this.interval);
         },
         stop() {
@@ -116,10 +108,8 @@ module.exports = {
     },
     mounted() {
         this.isPlaying = false;
-        //播放次数
-        this.count = 0;
         //执行的下标
-        this.index = 0;
+        this.index = this.current;
         //setTimeout标示
         this.timeoutId = null;
 
@@ -127,17 +117,18 @@ module.exports = {
         this.distinct = 0;
 
         //获取元素
-        this.$content = this.$el.querySelector('.swiper-content');
         this.$group = this.$el.querySelector('.swiper-group');
         this.$items = this.$group.querySelectorAll('.swiper-item');
 
         //初始化事件
         this.initEvent();
 
-        //启动
         this.$nextTick(function () {
+            //初始化位置
+            this.goto(this.index);
+            //启动
             if (this.size && this.autoplay) {
-                // this.play();
+                this.play();
             }
         });
 

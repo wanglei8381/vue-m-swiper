@@ -8240,24 +8240,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.list.length;
 	        }
 	    },
+	    watch: {},
 	    methods: {
 	        initEvent: function initEvent() {
 	            var _this = this;
 	
-	            var size = this.size;
-	            var step = this.alternate ? size : 0;
 	            //监听动画执行完毕,自动播放下一个
 	            this.$group.addEventListener('webkitTransitionEnd', function () {
 	                if (!_this.isPlaying) return;
 	                _this.timeoutId = setTimeout(function () {
-	                    if (_this.count % size === 0) {
-	                        _this.translateX(_this.$content, _this.count + step);
-	                    }
-	                    _this.count++;
-	                    _this.translateX(_this.$group, -_this.count);
-	                    var index = _this.count % size;
-	                    _this.index = index;
-	                    _this.change(index);
+	                    _this.alternate ? _this.previous() : _this.next();
 	                }, _this.interval);
 	            });
 	
@@ -8275,16 +8267,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	            //手动滑动
 	            this.$group.addEventListener('webkitTransitionEnd', function () {
-	                if (_this.isPlaying) return;
 	                if (_this.index === _this.size) {
 	                    move.call(_this, _this.index);
 	                } else if (_this.index === -1) {
 	                    move.call(_this, 1);
 	                }
+	
+	                _this.change(_this.index);
 	            });
 	        },
 	        translateX: function translateX(el, count) {
-	            count = this.alternate ? -count : count;
 	            el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
 	        },
 	        play: function play() {
@@ -8293,7 +8285,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (this.isPlaying) return;
 	            this.isPlaying = true;
 	            this.timeoutId = setTimeout(function () {
-	                _this3.goto(_this3.index + 1);
+	                _this3.alternate ? _this3.previous() : _this3.next();
 	            }, this.interval);
 	        },
 	        stop: function stop() {
@@ -8326,10 +8318,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this4 = this;
 	
 	        this.isPlaying = false;
-	        //播放次数
-	        this.count = 0;
 	        //执行的下标
-	        this.index = 0;
+	        this.index = this.current;
 	        //setTimeout标示
 	        this.timeoutId = null;
 	
@@ -8337,17 +8327,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.distinct = 0;
 	
 	        //获取元素
-	        this.$content = this.$el.querySelector('.swiper-content');
 	        this.$group = this.$el.querySelector('.swiper-group');
 	        this.$items = this.$group.querySelectorAll('.swiper-item');
 	
 	        //初始化事件
 	        this.initEvent();
 	
-	        //启动
 	        this.$nextTick(function () {
+	            //初始化位置
+	            this.goto(this.index);
+	            //启动
 	            if (this.size && this.autoplay) {
-	                // this.play();
+	                this.play();
 	            }
 	        });
 	
@@ -8407,7 +8398,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
+	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
 	
 	// exports
 
@@ -8416,7 +8407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 9 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-content\">\n      <div class=\"swiper-group\">\n        <div class=\"swiper-item\">\n          <img :src=\"list[list.length - 1]\">\n        </div>\n        <div class=\"swiper-item\" v-for=\"item in list\">\n          <img :src=\"item\">\n        </div>\n        <div class=\"swiper-item\">\n          <img :src=\"list[0]\">\n        </div>\n      </div>\n    </div>\n  </div>\n</div>";
+	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ },
 /* 10 */
