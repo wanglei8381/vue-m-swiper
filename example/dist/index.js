@@ -8260,18 +8260,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    _this.change(index);
 	                }, _this.interval);
 	            });
+	
+	            var move = function move(index) {
+	                var _this2 = this;
+	
+	                var idx = index - this.size;
+	                this.$group.style.webkitTransitionDuration = '0s';
+	                this.translateX(this.$group, idx);
+	                this.index = Math.abs(idx);
+	                //更新过渡时间
+	                setTimeout(function () {
+	                    _this2.$group.style.webkitTransitionDuration = _this2.duration + 'ms';
+	                }, 0);
+	            };
+	            //手动滑动
+	            this.$group.addEventListener('webkitTransitionEnd', function () {
+	                if (_this.isPlaying) return;
+	                if (_this.index === _this.size) {
+	                    move.call(_this, _this.index);
+	                } else if (_this.index === -1) {
+	                    move.call(_this, 1);
+	                }
+	            });
 	        },
 	        translateX: function translateX(el, count) {
 	            count = this.alternate ? -count : count;
 	            el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
 	        },
 	        play: function play() {
-	            var _this2 = this;
+	            var _this3 = this;
 	
 	            if (this.isPlaying) return;
 	            this.isPlaying = true;
 	            this.timeoutId = setTimeout(function () {
-	                _this2.goto(_this2.index + 1);
+	                _this3.goto(_this3.index + 1);
 	            }, this.interval);
 	        },
 	        stop: function stop() {
@@ -8279,26 +8301,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            clearTimeout(this.timeoutId);
 	        },
 	        goto: function goto(index) {
-	            var _this3 = this;
-	
-	            index = index % (this.size + 1);
-	            // index = index < 0 ? index + this.size : index;
-	            if (index == this.index) {
-	                return;
-	            }
-	            clearTimeout(this.timeoutId);
-	            // var step = this.interval ? 0 : this.size;
-	            this.translateX(this.$content, 0);
-	            this.$group.style.webkitTransitionDuration = '0s';
-	            this.translateX(this.$group, -this.index);
-	
-	            setTimeout(function () {
-	                _this3.$group.style.webkitTransitionDuration = _this3.duration + 'ms';
-	                _this3.translateX(_this3.$group, -index);
-	                _this3.index = index;
-	                _this3.count = index;
-	                _this3.change(index);
-	            }, 0);
+	            this.translateX(this.$group, -index);
+	            this.index = index % (this.size + 1);
 	        },
 	        move: function move(res) {
 	            // this.distinct -= res.xrange;
@@ -8403,7 +8407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s ease-out;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
+	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n}\n.swiper-container .swiper-wrapper {\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s ease-out;\n  -webkit-transition: -webkit-transform 1s ease-out;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-content .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
 	
 	// exports
 

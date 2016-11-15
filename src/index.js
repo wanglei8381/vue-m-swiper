@@ -55,6 +55,27 @@ module.exports = {
                     this.change(index);
                 }, this.interval);
             });
+
+
+            var move = function (index) {
+                var idx = index - this.size;
+                this.$group.style.webkitTransitionDuration = '0s';
+                this.translateX(this.$group, idx);
+                this.index = Math.abs(idx);
+                //更新过渡时间
+                setTimeout(()=> {
+                    this.$group.style.webkitTransitionDuration = this.duration + 'ms';
+                }, 0);
+            }
+            //手动滑动
+            this.$group.addEventListener('webkitTransitionEnd', () => {
+                if (this.isPlaying) return;
+                if (this.index === this.size) {
+                    move.call(this, this.index);
+                } else if (this.index === -1) {
+                    move.call(this, 1);
+                }
+            });
         },
         translateX(el, count) {
             count = this.alternate ? -count : count;
@@ -72,24 +93,8 @@ module.exports = {
             clearTimeout(this.timeoutId);
         },
         goto(index) {
-            index = index % (this.size + 1);
-            // index = index < 0 ? index + this.size : index;
-            if (index == this.index) {
-                return;
-            }
-            clearTimeout(this.timeoutId);
-            // var step = this.interval ? 0 : this.size;
-            this.translateX(this.$content, 0);
-            this.$group.style.webkitTransitionDuration = '0s';
-            this.translateX(this.$group, -this.index);
-
-            setTimeout(() => {
-                this.$group.style.webkitTransitionDuration = this.duration + 'ms';
-                this.translateX(this.$group, -index);
-                this.index = index;
-                this.count = index;
-                this.change(index);
-            }, 0);
+            this.translateX(this.$group, -index);
+            this.index = index % (this.size + 1);
         },
         move(res) {
             // this.distinct -= res.xrange;
@@ -154,5 +159,6 @@ module.exports = {
         });
 
         touch.start();
+
     }
 };
