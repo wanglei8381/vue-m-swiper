@@ -67,20 +67,38 @@ module.exports = {
             var delayTime = 0;
             touch.on('touch:end', (res)=> {
                 res.e.preventDefault();
-                this.distinct = -parseInt(this.width);
-                this.$wrapper.style.webkitTransitionDuration = this.duration + 'ms';
-                this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+
+                this.distinct = -this.width*2;
                 if (Date.now() - delayTime > this.duration) {
-                    this.play();
-                    this.end(res);
+                    if (this.autoplay) {
+                        this.play();
+                    }
                     delayTime = Date.now();
                 }
+                this.end(res);
             });
 
             touch.start();
         },
         initEvent() {
 
+
+            //手动滑动
+            this.$group.addEventListener('webkitTransitionEnd', () => {
+                this.verifyMove();
+
+                //通知父组件
+                this.change(this.index);
+            });
+
+            //监听动画执行完毕,自动播放下一个
+            this.$group.addEventListener('webkitTransitionEnd', () => {
+                if (this.autoplay && this.isPlaying) {
+                    this.delayPlay();
+                }
+            });
+        },
+        verifyMove() {
             var move = function (index) {
                 var idx = index - this.size;
                 this.$group.style.webkitTransitionDuration = '0s';
@@ -91,23 +109,12 @@ module.exports = {
                     this.$group.style.webkitTransitionDuration = this.duration + 'ms';
                 }, 0);
             }
-            //手动滑动
-            this.$group.addEventListener('webkitTransitionEnd', () => {
-                if (this.index === this.size) {
-                    move.call(this, this.index);
-                } else if (this.index === -1) {
-                    move.call(this, 1);
-                }
 
-                this.change(this.index);
-            });
-
-            //监听动画执行完毕,自动播放下一个
-            this.$group.addEventListener('webkitTransitionEnd', () => {
-                if (this.autoplay && this.isPlaying) {
-                    this.delayPlay();
-                }
-            });
+            if (this.index === this.size) {
+                move.call(this, this.index);
+            } else if (this.index === -1) {
+                move.call(this, 1);
+            }
         },
         translateX(el, count) {
             el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
@@ -135,16 +142,28 @@ module.exports = {
             this.index = index % (this.size + 1);
         },
         move(res) {
-            this.distinct -= res.xrange * 0.5;
+            this.distinct -= res.xrange;
             this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         end(res) {
-            if (Math.abs(res.x1 - res.x2) < 100) return;
-            if (res.dir === 'left') {
-                this.next();
-            } else if (res.dir === 'right') {
-                this.previous();
+            let dis = Math.abs(res.x1 - res.x2);
+            let handler = () => {
+                if (res.dir === 'left') {
+                    this.next();
+                } else if (res.dir === 'right') {
+                    this.previous();
+                }
             }
+            if (res.spend < 250 && dis > 30) {
+                this.$wrapper.style.webkitTransitionDuration = '300ms';
+                handler();
+            } else if (dis < this.width / 2) {
+                this.$wrapper.style.webkitTransitionDuration = '300ms';
+            } else {
+                handler();
+                this.$wrapper.style.webkitTransitionDuration = '1000ms';
+            }
+            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         previous() {
             this.goto(this.index - 1);
@@ -160,9 +179,9 @@ module.exports = {
         //setTimeout标示
         this.timeoutId = null;
 
-        this.width = getComputedStyle(this.$el).getPropertyValue('width');
+        this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
         //手滑动的距离
-        this.distinct = -parseInt(this.width);
+        this.distinct = -this.width * 2;
 
         //获取元素
         this.$wrapper = this.$el.querySelector('.swiper-wrapper');

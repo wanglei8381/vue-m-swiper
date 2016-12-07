@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	
 	        setTimeout(function () {
-	            _this.list = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+	            _this.list = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 	        }, 1000);
 	    }
 	});
@@ -8279,23 +8279,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var delayTime = 0;
 	            touch.on('touch:end', function (res) {
 	                res.e.preventDefault();
-	                _this.distinct = -parseInt(_this.width);
-	                _this.$wrapper.style.webkitTransitionDuration = _this.duration + 'ms';
-	                _this.$wrapper.style.webkitTransform = 'translate3d(' + _this.distinct + 'px,0,0)';
+	
+	                _this.distinct = -_this.width * 2;
 	                if (Date.now() - delayTime > _this.duration) {
-	                    _this.play();
-	                    _this.end(res);
+	                    if (_this.autoplay) {
+	                        _this.play();
+	                    }
 	                    delayTime = Date.now();
 	                }
+	                _this.end(res);
 	            });
 	
 	            touch.start();
 	        },
 	        initEvent: function initEvent() {
-	            var _this3 = this;
+	            var _this2 = this;
 	
+	            //手动滑动
+	            this.$group.addEventListener('webkitTransitionEnd', function () {
+	                _this2.verifyMove();
+	
+	                //通知父组件
+	                _this2.change(_this2.index);
+	            });
+	
+	            //监听动画执行完毕,自动播放下一个
+	            this.$group.addEventListener('webkitTransitionEnd', function () {
+	                if (_this2.autoplay && _this2.isPlaying) {
+	                    _this2.delayPlay();
+	                }
+	            });
+	        },
+	        verifyMove: function verifyMove() {
 	            var move = function move(index) {
-	                var _this2 = this;
+	                var _this3 = this;
 	
 	                var idx = index - this.size;
 	                this.$group.style.webkitTransitionDuration = '0s';
@@ -8303,26 +8320,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.index = Math.abs(idx);
 	                //更新过渡时间
 	                setTimeout(function () {
-	                    _this2.$group.style.webkitTransitionDuration = _this2.duration + 'ms';
+	                    _this3.$group.style.webkitTransitionDuration = _this3.duration + 'ms';
 	                }, 0);
 	            };
-	            //手动滑动
-	            this.$group.addEventListener('webkitTransitionEnd', function () {
-	                if (_this3.index === _this3.size) {
-	                    move.call(_this3, _this3.index);
-	                } else if (_this3.index === -1) {
-	                    move.call(_this3, 1);
-	                }
 	
-	                _this3.change(_this3.index);
-	            });
-	
-	            //监听动画执行完毕,自动播放下一个
-	            this.$group.addEventListener('webkitTransitionEnd', function () {
-	                if (_this3.autoplay && _this3.isPlaying) {
-	                    _this3.delayPlay();
-	                }
-	            });
+	            if (this.index === this.size) {
+	                move.call(this, this.index);
+	            } else if (this.index === -1) {
+	                move.call(this, 1);
+	            }
 	        },
 	        translateX: function translateX(el, count) {
 	            el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
@@ -8352,16 +8358,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.index = index % (this.size + 1);
 	        },
 	        move: function move(res) {
-	            this.distinct -= res.xrange * 0.5;
+	            this.distinct -= res.xrange;
 	            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        end: function end(res) {
-	            if (Math.abs(res.x1 - res.x2) < 100) return;
-	            if (res.dir === 'left') {
-	                this.next();
-	            } else if (res.dir === 'right') {
-	                this.previous();
+	            var _this5 = this;
+	
+	            var dis = Math.abs(res.x1 - res.x2);
+	            var handler = function handler() {
+	                if (res.dir === 'left') {
+	                    _this5.next();
+	                } else if (res.dir === 'right') {
+	                    _this5.previous();
+	                }
+	            };
+	            if (res.spend < 250 && dis > 30) {
+	                this.$wrapper.style.webkitTransitionDuration = '300ms';
+	                handler();
+	            } else if (dis < this.width / 2) {
+	                this.$wrapper.style.webkitTransitionDuration = '300ms';
+	            } else {
+	                handler();
+	                this.$wrapper.style.webkitTransitionDuration = '1000ms';
 	            }
+	            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        previous: function previous() {
 	            this.goto(this.index - 1);
@@ -8377,9 +8397,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //setTimeout标示
 	        this.timeoutId = null;
 	
-	        this.width = getComputedStyle(this.$el).getPropertyValue('width');
+	        this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
 	        //手滑动的距离
-	        this.distinct = -parseInt(this.width);
+	        this.distinct = -this.width * 2;
 	
 	        //获取元素
 	        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
@@ -8439,7 +8459,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper {\n  height: 100%;\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n  transition: transform 1s;\n  -webkit-transition: -webkit-transform 1s;\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
+	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper {\n  height: 100%;\n  transform: translateX(-200%);\n  -webkit-transform: translateX(-200%);\n  transition: transform 1s;\n  -webkit-transition: -webkit-transform 1s;\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
 	
 	// exports
 
@@ -8822,7 +8842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 12 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n    </div>\n  </div>\n</div>";
+	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 2]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[1]\">\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }
 /******/ ])

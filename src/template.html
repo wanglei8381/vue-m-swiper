@@ -4,11 +4,17 @@
       <div class="swiper-item">
         <img :src="list[list.length - 1]">
       </div>
+      <div class="swiper-item">
+        <img :src="list[list.length - 2]">
+      </div>
       <div class="swiper-item" v-for="item in list">
         <img :src="item">
       </div>
       <div class="swiper-item">
         <img :src="list[0]">
+      </div>
+      <div class="swiper-item">
+        <img :src="list[1]">
       </div>
     </div>
   </div>

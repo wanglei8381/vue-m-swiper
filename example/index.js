@@ -15,7 +15,7 @@ new Vue({
     },
     mounted(){
         setTimeout(()=> {
-            this.list = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+            this.list = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
         }, 1000);
     }
 });
