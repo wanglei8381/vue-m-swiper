@@ -55,7 +55,8 @@ module.exports = {
 
             touch.on('touch:start', (res)=> {
                 res.e.preventDefault();
-                this.$wrapper.style.webkitTransitionDuration = '0s';
+                this.distinct = -this.index * this.width;
+                this.$group.style.webkitTransitionDuration = '0s';
                 this.stop();
             });
 
@@ -67,12 +68,9 @@ module.exports = {
             var delayTime = 0;
             touch.on('touch:end', (res)=> {
                 res.e.preventDefault();
-
-                this.distinct = -this.width;
-                if (Date.now() - delayTime > this.duration) {
-                    if (this.autoplay) {
-                        this.play();
-                    }
+                this.distinct = -this.index * this.width;
+                if (Date.now() - delayTime > this.interval) {
+                    this.play();
                     delayTime = Date.now();
                 }
                 this.end(res);
@@ -81,20 +79,15 @@ module.exports = {
             touch.start();
         },
         initEvent() {
-
-
-            //手动滑动
-            this.$group.addEventListener('webkitTransitionEnd', () => {
-                this.verifyMove();
-                //通知父组件
-                this.change(this.index);
-            });
-
             //监听动画执行完毕,自动播放下一个
             this.$group.addEventListener('webkitTransitionEnd', () => {
+                this.verifyMove();
+                this.play();
                 if (this.autoplay && this.isPlaying) {
                     this.delayPlay();
                 }
+                //通知父组件
+                this.change(this.index);
             });
         },
         verifyMove() {
@@ -109,9 +102,9 @@ module.exports = {
                 }, 0);
             }
 
-            if (this.index === this.size) {
+            if (this.index >= this.size) {
                 move.call(this, this.index);
-            } else if (this.index === -1) {
+            } else if (this.index <= -1) {
                 move.call(this, 1);
             }
         },
@@ -122,13 +115,13 @@ module.exports = {
             if (this.isPlaying) return;
             if (this.size && this.autoplay) {
                 this.isPlaying = true;
+                this.$group.style.webkitTransitionDuration = this.duration + 'ms';
                 this.delayPlay();
             }
         },
         delayPlay() {
             this.timeoutId = setTimeout(() => {
                 this.alternate ? this.previous() : this.next();
-                //消除iphone5s多次执行
                 clearTimeout(this.timeoutId);
             }, this.interval);
         },
@@ -142,7 +135,7 @@ module.exports = {
         },
         move(res) {
             this.distinct -= res.xrange;
-            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+            this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         end(res) {
             let dis = Math.abs(res.x1 - res.x2);
@@ -154,15 +147,15 @@ module.exports = {
                 }
             }
             if (res.spend < 250 && dis > 30) {
-                this.$wrapper.style.webkitTransitionDuration = '300ms';
+                this.$group.style.webkitTransitionDuration = '300ms';
                 handler();
             } else if (dis < this.width / 2) {
-                this.$wrapper.style.webkitTransitionDuration = '300ms';
+                this.$group.style.webkitTransitionDuration = '300ms';
+                this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
             } else {
+                this.$group.style.webkitTransitionDuration = '300ms';
                 handler();
-                this.$wrapper.style.webkitTransitionDuration = '1000ms';
             }
-            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         previous() {
             this.goto(this.index - 1);
@@ -180,10 +173,10 @@ module.exports = {
 
         this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
         //手滑动的距离
-        this.distinct = -this.width;
+        this.distinct = 0;
 
         //获取元素
-        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
+        // this.$wrapper = this.$el.querySelector('.swiper-wrapper');
         this.$group = this.$el.querySelector('.swiper-group');
         this.$items = this.$group.querySelectorAll('.swiper-item');
 

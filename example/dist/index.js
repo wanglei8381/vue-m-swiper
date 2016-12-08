@@ -8267,7 +8267,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            touch.on('touch:start', function (res) {
 	                res.e.preventDefault();
-	                _this.$wrapper.style.webkitTransitionDuration = '0s';
+	                _this.distinct = -_this.index * _this.width;
+	                _this.$group.style.webkitTransitionDuration = '0s';
 	                _this.stop();
 	            });
 	
@@ -8279,12 +8280,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var delayTime = 0;
 	            touch.on('touch:end', function (res) {
 	                res.e.preventDefault();
-	
-	                _this.distinct = -_this.width;
-	                if (Date.now() - delayTime > _this.duration) {
-	                    if (_this.autoplay) {
-	                        _this.play();
-	                    }
+	                _this.distinct = -_this.index * _this.width;
+	                if (Date.now() - delayTime > _this.interval) {
+	                    _this.play();
 	                    delayTime = Date.now();
 	                }
 	                _this.end(res);
@@ -8295,18 +8293,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        initEvent: function initEvent() {
 	            var _this2 = this;
 	
-	            //手动滑动
-	            this.$group.addEventListener('webkitTransitionEnd', function () {
-	                _this2.verifyMove();
-	                //通知父组件
-	                _this2.change(_this2.index);
-	            });
-	
 	            //监听动画执行完毕,自动播放下一个
 	            this.$group.addEventListener('webkitTransitionEnd', function () {
+	                _this2.verifyMove();
+	                _this2.play();
 	                if (_this2.autoplay && _this2.isPlaying) {
 	                    _this2.delayPlay();
 	                }
+	                //通知父组件
+	                _this2.change(_this2.index);
 	            });
 	        },
 	        verifyMove: function verifyMove() {
@@ -8323,9 +8318,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }, 0);
 	            };
 	
-	            if (this.index === this.size) {
+	            if (this.index >= this.size) {
 	                move.call(this, this.index);
-	            } else if (this.index === -1) {
+	            } else if (this.index <= -1) {
 	                move.call(this, 1);
 	            }
 	        },
@@ -8336,6 +8331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (this.isPlaying) return;
 	            if (this.size && this.autoplay) {
 	                this.isPlaying = true;
+	                this.$group.style.webkitTransitionDuration = this.duration + 'ms';
 	                this.delayPlay();
 	            }
 	        },
@@ -8344,7 +8340,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            this.timeoutId = setTimeout(function () {
 	                _this4.alternate ? _this4.previous() : _this4.next();
-	                //消除iphone5s多次执行
 	                clearTimeout(_this4.timeoutId);
 	            }, this.interval);
 	        },
@@ -8358,7 +8353,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        move: function move(res) {
 	            this.distinct -= res.xrange;
-	            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+	            this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        end: function end(res) {
 	            var _this5 = this;
@@ -8372,15 +8367,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            };
 	            if (res.spend < 250 && dis > 30) {
-	                this.$wrapper.style.webkitTransitionDuration = '300ms';
+	                this.$group.style.webkitTransitionDuration = '300ms';
 	                handler();
 	            } else if (dis < this.width / 2) {
-	                this.$wrapper.style.webkitTransitionDuration = '300ms';
+	                this.$group.style.webkitTransitionDuration = '300ms';
+	                this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	            } else {
+	                this.$group.style.webkitTransitionDuration = '300ms';
 	                handler();
-	                this.$wrapper.style.webkitTransitionDuration = '1000ms';
 	            }
-	            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        previous: function previous() {
 	            this.goto(this.index - 1);
@@ -8398,10 +8393,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
 	        //手滑动的距离
-	        this.distinct = -this.width;
+	        this.distinct = 0;
 	
 	        //获取元素
-	        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
+	        // this.$wrapper = this.$el.querySelector('.swiper-wrapper');
 	        this.$group = this.$el.querySelector('.swiper-group');
 	        this.$items = this.$group.querySelectorAll('.swiper-item');
 	
@@ -8458,7 +8453,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper {\n  height: 100%;\n  transform: translateX(-200%);\n  -webkit-transform: translateX(-200%);\n  transition: transform 1s;\n  -webkit-transition: -webkit-transform 1s;\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
+	exports.push([module.id, ".swiper-container {\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 0;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper {\n  height: 100%;\n  transform: translateX(-100%);\n  -webkit-transform: translateX(-100%);\n  transition: transform 1s;\n  -webkit-transition: -webkit-transform 1s;\n}\n.swiper-container .swiper-wrapper .swiper-group {\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n  -webkit-transition: -webkit-transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item {\n  display: inline-block;\n  width: 100%;\n  height: 100%;\n}\n.swiper-container .swiper-wrapper .swiper-group .swiper-item img {\n  width: 100%;\n  height: 100%;\n}\n", ""]);
 	
 	// exports
 
