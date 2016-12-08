@@ -68,7 +68,7 @@ module.exports = {
             touch.on('touch:end', (res)=> {
                 res.e.preventDefault();
 
-                this.distinct = -this.width*2;
+                this.distinct = -this.width;
                 if (Date.now() - delayTime > this.duration) {
                     if (this.autoplay) {
                         this.play();
@@ -86,7 +86,6 @@ module.exports = {
             //手动滑动
             this.$group.addEventListener('webkitTransitionEnd', () => {
                 this.verifyMove();
-
                 //通知父组件
                 this.change(this.index);
             });
@@ -181,7 +180,7 @@ module.exports = {
 
         this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
         //手滑动的距离
-        this.distinct = -this.width * 2;
+        this.distinct = -this.width;
 
         //获取元素
         this.$wrapper = this.$el.querySelector('.swiper-wrapper');

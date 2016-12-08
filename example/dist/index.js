@@ -8280,7 +8280,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            touch.on('touch:end', function (res) {
 	                res.e.preventDefault();
 	
-	                _this.distinct = -_this.width * 2;
+	                _this.distinct = -_this.width;
 	                if (Date.now() - delayTime > _this.duration) {
 	                    if (_this.autoplay) {
 	                        _this.play();
@@ -8298,7 +8298,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            //手动滑动
 	            this.$group.addEventListener('webkitTransitionEnd', function () {
 	                _this2.verifyMove();
-	
 	                //通知父组件
 	                _this2.change(_this2.index);
 	            });
@@ -8399,7 +8398,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
 	        //手滑动的距离
-	        this.distinct = -this.width * 2;
+	        this.distinct = -this.width;
 	
 	        //获取元素
 	        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
@@ -8842,7 +8841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 12 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 2]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[1]\">\n      </div>\n    </div>\n  </div>\n</div>";
+	module.exports = "<div class=\"swiper-container\">\n  <div class=\"swiper-wrapper\">\n    <div class=\"swiper-group\">\n      <div class=\"swiper-item\">\n        <img :src=\"list[list.length - 1]\">\n      </div>\n      <div class=\"swiper-item\" v-for=\"item in list\">\n        <img :src=\"item\">\n      </div>\n      <div class=\"swiper-item\">\n        <img :src=\"list[0]\">\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }
 /******/ ])
