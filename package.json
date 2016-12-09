@@ -1,6 +1,6 @@
 {
   "name": "vue-m-swiper",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "移动端选择工具",
   "license": "MIT",
   "main": "index.js",
@@ -26,7 +26,7 @@
     "super-touch": "^0.0.4"
   },
   "devDependencies": {
-    "vue": "^1.0.24",
+    "vue": "^2.0.5",
     "babel-core": "^6.9.0",
     "babel-loader": "^6.2.4",
     "babel-plugin-transform-runtime": "^6.9.0",

@@ -45,12 +45,30 @@ module.exports = {
     },
     watch: {
         size: function size(val) {
-            if (val) {
-                this.play();
-            }
+            this.init();
         }
     },
     methods: {
+        init: function init() {
+            //当多个图片才初始化
+            if (this.size > 1) {
+
+                //初始化事件
+                this.initEvent();
+
+                //初始化滑动事件
+                if (this.slideplay) {
+                    this.initTouch();
+                }
+
+                //自动播放
+                if (this.autoplay) {
+                    this.isPlaying = true;
+                    this.$group.style.webkitTransitionDuration = this.duration + 'ms';
+                    this.delayPlay();
+                }
+            }
+        },
         initTouch: function initTouch() {
             var _this = this;
 
@@ -58,7 +76,8 @@ module.exports = {
 
             touch.on('touch:start', function (res) {
                 res.e.preventDefault();
-                _this.$wrapper.style.webkitTransitionDuration = '0s';
+                _this.distinct = -_this.index * _this.width;
+                _this.$group.style.webkitTransitionDuration = '0s';
                 _this.stop();
             });
 
@@ -67,26 +86,29 @@ module.exports = {
                 _this.move(res);
             });
 
-            var delayTime = 0;
             touch.on('touch:end', function (res) {
                 res.e.preventDefault();
-                _this.distinct = -parseInt(_this.width);
-                _this.$wrapper.style.webkitTransitionDuration = _this.duration + 'ms';
-                _this.$wrapper.style.webkitTransform = 'translate3d(' + _this.distinct + 'px,0,0)';
-                if (Date.now() - delayTime > _this.duration) {
-                    _this.play();
-                    _this.end(res);
-                    delayTime = Date.now();
-                }
+                _this.end(res);
             });
 
             touch.start();
         },
         initEvent: function initEvent() {
-            var _this3 = this;
+            var _this2 = this;
 
+            //监听动画执行完毕,自动播放下一个
+            this.$group.addEventListener('webkitTransitionEnd', function () {
+                _this2.verifyMove();
+                if (_this2.autoplay && _this2.isPlaying) {
+                    _this2.delayPlay();
+                }
+                //通知父组件
+                _this2.change(_this2.index);
+            });
+        },
+        verifyMove: function verifyMove() {
             var move = function move(index) {
-                var _this2 = this;
+                var _this3 = this;
 
                 var idx = index - this.size;
                 this.$group.style.webkitTransitionDuration = '0s';
@@ -94,65 +116,75 @@ module.exports = {
                 this.index = Math.abs(idx);
                 //更新过渡时间
                 setTimeout(function () {
-                    _this2.$group.style.webkitTransitionDuration = _this2.duration + 'ms';
+                    _this3.$group.style.webkitTransitionDuration = _this3.duration + 'ms';
                 }, 0);
             };
-            //手动滑动
-            this.$group.addEventListener('webkitTransitionEnd', function () {
-                if (_this3.index === _this3.size) {
-                    move.call(_this3, _this3.index);
-                } else if (_this3.index === -1) {
-                    move.call(_this3, 1);
-                }
 
-                _this3.change(_this3.index);
-            });
-
-            //监听动画执行完毕,自动播放下一个
-            this.$group.addEventListener('webkitTransitionEnd', function () {
-                if (_this3.autoplay && _this3.isPlaying) {
-                    _this3.delayPlay();
-                }
-            });
+            if (this.index >= this.size) {
+                move.call(this, this.index);
+            } else if (this.index <= -1) {
+                move.call(this, 1);
+            }
         },
         translateX: function translateX(el, count) {
             el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
         },
         play: function play() {
-            if (this.isPlaying) return;
-            if (this.size && this.autoplay) {
-                this.isPlaying = true;
-                this.delayPlay();
-            }
-        },
-        delayPlay: function delayPlay() {
             var _this4 = this;
 
+            //重新自动播放
+            this.isPlaying = true;
+            //异步更改过渡时间是为了让之前的时间生效
+            setTimeout(function () {
+                _this4.$group.style.webkitTransitionDuration = _this4.duration + 'ms';
+            }, 0);
+        },
+        delayPlay: function delayPlay() {
+            var _this5 = this;
+
             this.timeoutId = setTimeout(function () {
-                _this4.alternate ? _this4.previous() : _this4.next();
-                //消除iphone5s多次执行
-                clearTimeout(_this4.timeoutId);
+                _this5.alternate ? _this5.previous() : _this5.next();
+                clearTimeout(_this5.timeoutId);
             }, this.interval);
         },
         stop: function stop() {
-            this.isPlaying = false;
-            clearTimeout(this.timeoutId);
+            //停止自动播放
+            if (this.autoplay) {
+                this.isPlaying = false;
+                clearTimeout(this.timeoutId);
+            }
         },
         goto: function goto(index) {
             this.translateX(this.$group, -index);
             this.index = index % (this.size + 1);
         },
         move: function move(res) {
-            this.distinct -= res.xrange * 0.5;
-            this.$wrapper.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+            this.distinct -= res.xrange;
+            this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
         },
         end: function end(res) {
-            if (Math.abs(res.x1 - res.x2) < 100) return;
-            if (res.dir === 'left') {
-                this.next();
-            } else if (res.dir === 'right') {
-                this.previous();
+            var _this6 = this;
+
+            var dis = Math.abs(res.x1 - res.x2);
+            var handler = function handler() {
+                if (res.dir === 'left') {
+                    _this6.next();
+                } else if (res.dir === 'right') {
+                    _this6.previous();
+                }
+            };
+
+            this.$group.style.webkitTransitionDuration = '300ms';
+            if (res.spend < 250 && dis > 30) {
+                handler();
+            } else if (dis < this.width / 2) {
+                this.distinct = -this.index * this.width;
+                this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
+            } else {
+                handler();
             }
+
+            this.play();
         },
         previous: function previous() {
             this.goto(this.index - 1);
@@ -162,35 +194,28 @@ module.exports = {
         }
     },
     mounted: function mounted() {
+        //是否是正在自动播放
         this.isPlaying = false;
         //执行的下标
         this.index = this.current;
         //setTimeout标示
         this.timeoutId = null;
 
-        this.width = getComputedStyle(this.$el).getPropertyValue('width');
+        //元素的宽度
+        this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
         //手滑动的距离
-        this.distinct = -parseInt(this.width);
+        this.distinct = 0;
 
         //获取元素
-        this.$wrapper = this.$el.querySelector('.swiper-wrapper');
+        // this.$wrapper = this.$el.querySelector('.swiper-wrapper');
         this.$group = this.$el.querySelector('.swiper-group');
         this.$items = this.$group.querySelectorAll('.swiper-item');
 
-        //初始化事件
-        this.initEvent();
-
-        if (this.slideplay) {
-            this.initTouch();
-        }
-
         this.$nextTick(function () {
             //初始化位置
-            this.goto(this.index);
+            // this.goto(this.index);
             //启动
-            if (this.size && this.autoplay) {
-                this.play();
-            }
+            this.init();
         });
     }
 };

@@ -63,12 +63,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    el: '#container',
 	    data: function data() {
 	        return {
-	            list: []
+	            list: [],
+	            index: 1
 	        };
 	    },
 	    methods: {
 	        change: function change(index) {
-	            console.log(index);
+	            this.index = index + 1;
 	        }
 	    },
 	    mounted: function mounted() {
@@ -8254,12 +8255,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    watch: {
 	        size: function size(val) {
-	            if (val) {
-	                this.play();
-	            }
+	            this.init();
 	        }
 	    },
 	    methods: {
+	        init: function init() {
+	            //当多个图片才初始化
+	            if (this.size > 1) {
+	
+	                //初始化事件
+	                this.initEvent();
+	
+	                //初始化滑动事件
+	                if (this.slideplay) {
+	                    this.initTouch();
+	                }
+	
+	                //自动播放
+	                if (this.autoplay) {
+	                    this.isPlaying = true;
+	                    this.$group.style.webkitTransitionDuration = this.duration + 'ms';
+	                    this.delayPlay();
+	                }
+	            }
+	        },
 	        initTouch: function initTouch() {
 	            var _this = this;
 	
@@ -8277,14 +8296,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this.move(res);
 	            });
 	
-	            var delayTime = 0;
 	            touch.on('touch:end', function (res) {
 	                res.e.preventDefault();
-	                _this.distinct = -_this.index * _this.width;
-	                if (Date.now() - delayTime > _this.interval) {
-	                    _this.play();
-	                    delayTime = Date.now();
-	                }
 	                _this.end(res);
 	            });
 	
@@ -8296,7 +8309,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            //监听动画执行完毕,自动播放下一个
 	            this.$group.addEventListener('webkitTransitionEnd', function () {
 	                _this2.verifyMove();
-	                _this2.play();
 	                if (_this2.autoplay && _this2.isPlaying) {
 	                    _this2.delayPlay();
 	                }
@@ -8328,24 +8340,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	            el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
 	        },
 	        play: function play() {
-	            if (this.isPlaying) return;
-	            if (this.size && this.autoplay) {
-	                this.isPlaying = true;
-	                this.$group.style.webkitTransitionDuration = this.duration + 'ms';
-	                this.delayPlay();
-	            }
-	        },
-	        delayPlay: function delayPlay() {
 	            var _this4 = this;
 	
+	            //重新自动播放
+	            this.isPlaying = true;
+	            //异步更改过渡时间是为了让之前的时间生效
+	            setTimeout(function () {
+	                _this4.$group.style.webkitTransitionDuration = _this4.duration + 'ms';
+	            }, 0);
+	        },
+	        delayPlay: function delayPlay() {
+	            var _this5 = this;
+	
 	            this.timeoutId = setTimeout(function () {
-	                _this4.alternate ? _this4.previous() : _this4.next();
-	                clearTimeout(_this4.timeoutId);
+	                _this5.alternate ? _this5.previous() : _this5.next();
+	                clearTimeout(_this5.timeoutId);
 	            }, this.interval);
 	        },
 	        stop: function stop() {
-	            this.isPlaying = false;
-	            clearTimeout(this.timeoutId);
+	            //停止自动播放
+	            if (this.autoplay) {
+	                this.isPlaying = false;
+	                clearTimeout(this.timeoutId);
+	            }
 	        },
 	        goto: function goto(index) {
 	            this.translateX(this.$group, -index);
@@ -8356,26 +8373,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	        },
 	        end: function end(res) {
-	            var _this5 = this;
+	            var _this6 = this;
 	
 	            var dis = Math.abs(res.x1 - res.x2);
 	            var handler = function handler() {
 	                if (res.dir === 'left') {
-	                    _this5.next();
+	                    _this6.next();
 	                } else if (res.dir === 'right') {
-	                    _this5.previous();
+	                    _this6.previous();
 	                }
 	            };
+	
+	            this.$group.style.webkitTransitionDuration = '300ms';
 	            if (res.spend < 250 && dis > 30) {
-	                this.$group.style.webkitTransitionDuration = '300ms';
 	                handler();
 	            } else if (dis < this.width / 2) {
-	                this.$group.style.webkitTransitionDuration = '300ms';
+	                this.distinct = -this.index * this.width;
 	                this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
 	            } else {
-	                this.$group.style.webkitTransitionDuration = '300ms';
 	                handler();
 	            }
+	
+	            this.play();
 	        },
 	        previous: function previous() {
 	            this.goto(this.index - 1);
@@ -8385,12 +8404,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 	    mounted: function mounted() {
+	        //是否是正在自动播放
 	        this.isPlaying = false;
 	        //执行的下标
 	        this.index = this.current;
 	        //setTimeout标示
 	        this.timeoutId = null;
 	
+	        //元素的宽度
 	        this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
 	        //手滑动的距离
 	        this.distinct = 0;
@@ -8400,20 +8421,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.$group = this.$el.querySelector('.swiper-group');
 	        this.$items = this.$group.querySelectorAll('.swiper-item');
 	
-	        //初始化事件
-	        this.initEvent();
-	
-	        if (this.slideplay) {
-	            this.initTouch();
-	        }
-	
 	        this.$nextTick(function () {
 	            //初始化位置
-	            this.goto(this.index);
+	            // this.goto(this.index);
 	            //启动
-	            if (this.size && this.autoplay) {
-	                this.play();
-	            }
+	            this.init();
 	        });
 	    }
 	};

@@ -5,12 +5,13 @@ new Vue({
     el: '#container',
     data: function () {
         return {
-            list: []
+            list: [],
+            index: 1
         }
     },
     methods: {
         change(index) {
-            console.log(index);
+            this.index = index + 1;
         }
     },
     mounted(){

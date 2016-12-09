@@ -34,12 +34,6 @@ Type : Boolean
 Default: false
 自动播放的顺序,默认从左到右
 </pre>
-####current
-<pre>
-Type : Number
-Default : 0
-初始指定的下标
-</pre>
 ####interval
 <pre>
 Type : Number

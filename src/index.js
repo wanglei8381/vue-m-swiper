@@ -44,12 +44,30 @@ module.exports = {
     },
     watch: {
         size(val){
-            if (val) {
-                this.play();
-            }
+            this.init();
         }
     },
     methods: {
+        init() {
+            //当多个图片才初始化
+            if (this.size > 1) {
+
+                //初始化事件
+                this.initEvent();
+
+                //初始化滑动事件
+                if (this.slideplay) {
+                    this.initTouch();
+                }
+
+                //自动播放
+                if (this.autoplay) {
+                    this.isPlaying = true;
+                    this.$group.style.webkitTransitionDuration = this.duration + 'ms';
+                    this.delayPlay();
+                }
+            }
+        },
         initTouch() {
             var touch = new Touch(this.$el);
 
@@ -65,14 +83,8 @@ module.exports = {
                 this.move(res);
             });
 
-            var delayTime = 0;
             touch.on('touch:end', (res)=> {
                 res.e.preventDefault();
-                this.distinct = -this.index * this.width;
-                if (Date.now() - delayTime > this.interval) {
-                    this.play();
-                    delayTime = Date.now();
-                }
                 this.end(res);
             });
 
@@ -82,7 +94,6 @@ module.exports = {
             //监听动画执行完毕,自动播放下一个
             this.$group.addEventListener('webkitTransitionEnd', () => {
                 this.verifyMove();
-                this.play();
                 if (this.autoplay && this.isPlaying) {
                     this.delayPlay();
                 }
@@ -112,12 +123,12 @@ module.exports = {
             el.style.webkitTransform = 'translate3d(' + count * 100 + '%,0,0)';
         },
         play() {
-            if (this.isPlaying) return;
-            if (this.size && this.autoplay) {
-                this.isPlaying = true;
+            //重新自动播放
+            this.isPlaying = true;
+            //异步更改过渡时间是为了让之前的时间生效
+            setTimeout(()=> {
                 this.$group.style.webkitTransitionDuration = this.duration + 'ms';
-                this.delayPlay();
-            }
+            }, 0);
         },
         delayPlay() {
             this.timeoutId = setTimeout(() => {
@@ -126,8 +137,11 @@ module.exports = {
             }, this.interval);
         },
         stop() {
-            this.isPlaying = false;
-            clearTimeout(this.timeoutId);
+            //停止自动播放
+            if (this.autoplay) {
+                this.isPlaying = false;
+                clearTimeout(this.timeoutId);
+            }
         },
         goto(index) {
             this.translateX(this.$group, -index);
@@ -146,16 +160,18 @@ module.exports = {
                     this.previous();
                 }
             }
+
+            this.$group.style.webkitTransitionDuration = '300ms';
             if (res.spend < 250 && dis > 30) {
-                this.$group.style.webkitTransitionDuration = '300ms';
                 handler();
             } else if (dis < this.width / 2) {
-                this.$group.style.webkitTransitionDuration = '300ms';
+                this.distinct = -this.index * this.width;
                 this.$group.style.webkitTransform = 'translate3d(' + this.distinct + 'px,0,0)';
             } else {
-                this.$group.style.webkitTransitionDuration = '300ms';
                 handler();
             }
+
+            this.play();
         },
         previous() {
             this.goto(this.index - 1);
@@ -165,12 +181,14 @@ module.exports = {
         }
     },
     mounted() {
+        //是否是正在自动播放
         this.isPlaying = false;
         //执行的下标
         this.index = this.current;
         //setTimeout标示
         this.timeoutId = null;
 
+        //元素的宽度
         this.width = this.$el.getBoundingClientRect().width || parseInt(getComputedStyle(this.$el).getPropertyValue('width'));
         //手滑动的距离
         this.distinct = 0;
@@ -180,22 +198,12 @@ module.exports = {
         this.$group = this.$el.querySelector('.swiper-group');
         this.$items = this.$group.querySelectorAll('.swiper-item');
 
-        //初始化事件
-        this.initEvent();
-
-        if (this.slideplay) {
-            this.initTouch();
-        }
-
         this.$nextTick(function () {
             //初始化位置
-            this.goto(this.index);
+            // this.goto(this.index);
             //启动
-            if (this.size && this.autoplay) {
-                this.play();
-            }
+            this.init();
         });
-
 
     }
 };
