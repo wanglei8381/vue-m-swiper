@@ -75,19 +75,19 @@ module.exports = {
             var touch = new Touch(this.$el);
 
             touch.on('touch:start', function (res) {
-                res.e.preventDefault();
+                // res.e.preventDefault();
                 _this.distinct = -_this.index * _this.width;
                 _this.$group.style.webkitTransitionDuration = '0s';
                 _this.stop();
             });
 
             touch.on('touch:move', function (res) {
-                res.e.preventDefault();
+                // res.e.preventDefault();
                 _this.move(res);
             });
 
             touch.on('touch:end', function (res) {
-                res.e.preventDefault();
+                // res.e.preventDefault();
                 _this.end(res);
             });
 

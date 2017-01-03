@@ -12,6 +12,9 @@ new Vue({
     methods: {
         change(index) {
             this.index = index + 1;
+        },
+        todo() {
+            console.log('---->');
         }
     },
     mounted(){

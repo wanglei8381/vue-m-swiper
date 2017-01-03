@@ -11,7 +11,7 @@
 </head>
 <body>
 <div id="container">
-  <swiper :list="list" :autoplay="true" :slideplay="true" :change="change"></swiper>
+  <swiper @click.native="todo" :list="list" :autoplay="true" :slideplay="true" :change="change"></swiper>
   <div>{{index}}/{{list.length}}</div>
 </div>
 <script src="dist/index.js"></script>
